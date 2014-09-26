@@ -1,0 +1,7 @@
+---
+git_url: https://github.com/dlapiduz/govcode.org.git
+environment: staging
+app_path: ./test
+revision: master
+server_id: myserver
+use_github_api: true
