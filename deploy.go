@@ -2,116 +2,85 @@ package main
 
 import (
 	"bytes"
+	"errors"
 	"github.com/codegangsta/cli"
 	"github.com/dlapiduz/go-github/github"
 	"log"
+	"os"
 	"os/exec"
-	"strings"
 )
 
-func findRev(config *Config) string {
-	log.Println("Finding last revision")
+func checkNewDeployments(config *Config) error {
+	deployment, err := findNewDeployment(config)
+	PanicOn(err)
 
-	if config.UseGithubAPI {
-		client := config.GetGithubClient()
+	if deployment != nil {
+		log.Println("No status found...")
 
-		user, repo := config.ParseGithubInfo()
-		// Get the latest deployment for the environment
-		dep_list := github.DeploymentsListOptions{
-			Environment: config.Environment,
-		}
-		deployments, _, err := client.Repositories.ListDeployments(user, repo, &dep_list)
+		// Lets ping the api before deploying
+		log.Println("Setting to pending")
+		err := createDeployStatus(config, deployment, "pending")
 		PanicOn(err)
 
-		// Do we have a deployment?
-		if len(deployments) > 0 {
-
-			log.Println("Deployment found!")
-
-			// Check the statuses of the last one
-			statuses, _, err := client.Repositories.ListDeploymentStatuses(user, repo, *deployments[0].ID, nil)
-			PanicOn(err)
-
-			// Are there statuses?
-			if len(statuses) > 0 {
-				log.Println("There are statuses!")
-				for _, status := range statuses {
-					log.Println(status)
-				}
-			} else {
-				log.Println("No status found...")
-				// Lets deploy but before lets ping the api
-				err := createDeployStatus(config, &deployments[0], "pending")
-				PanicOn(err)
-				log.Println("Set to pending")
-
-				// Actually deploy
-				// Lets mark the deploy as a success
-				err = createDeployStatus(config, &deployments[0], "success")
-				PanicOn(err)
-				log.Println("Set to success")
-
-			}
-
-			return ""
-		} else {
-			return ""
+		// Actually deploy
+		err = doCheckout(config, deployment)
+		if err != nil {
+			log.Println("There was an error checking out the code")
+			statusErr := createDeployStatus(config, deployment, "error")
+			PanicOn(statusErr)
+			return err
 		}
-
-	} else {
-		args := []string{
-			"ls-remote",
-			config.GitUrl,
-			config.Revision,
-		}
-
-		rev_ls, err := exec.Command("git", args...).Output()
+		// Lets mark the deploy as a success
+		err = createDeployStatus(config, deployment, "success")
 		PanicOn(err)
-		revision := strings.Split(string(rev_ls), "\t")[0]
-
-		return revision
-
+		log.Println("Set to success")
 	}
+	return nil
 }
 
-func createDeployStatus(config *Config, deployment *github.Deployment, status string) error {
-	client := config.GetGithubClient()
-	user, repo := config.ParseGithubInfo()
-
-	req := github.DeploymentStatusRequest{
-		State:       &status,
-		Description: github.String("{\"server\": \"" + config.ServerId + "\"}"),
-	}
-	_, _, err := client.Repositories.CreateDeploymentStatus(user, repo, *deployment.ID, &req)
-	return err
-}
-
-func doCheckout(config *Config, checkout_path string) error {
+func doCheckout(config *Config, deployment *github.Deployment) error {
 	log.Println("Checking out code")
-	args := []string{
-		"clone",
-		"--depth=5",
-		config.GitUrl,
-		checkout_path,
+	checkout_path := config.AppPath + "/releases/" + *deployment.SHA
+	if _, err := os.Stat(checkout_path); err != nil {
+		if os.IsExist(err) {
+			return errors.New("Revision already checked out")
+		}
 	}
 
+	// clone the repo first
+	args := []string{"clone", config.GitUrl, checkout_path}
 	cmd := exec.Command("git", args...)
+
+	// capture stderr to see if there was an issue checking out the app
 	var stderr bytes.Buffer
 	cmd.Stderr = &stderr
 	err := cmd.Run()
 
 	if err != nil {
+		log.Println("There was an error cloning:")
 		log.Println(string(stderr.Bytes()))
-		log.Fatal(err)
+		return err
 	}
 
-	log.Println("Deployed!")
-	return err
+	// get the revision we want
+	cmd = exec.Command("git", "reset", "--hard", *deployment.SHA)
+	cmd.Dir = checkout_path
+	cmd.Stderr = &stderr
+
+	err = cmd.Run()
+	if err != nil {
+		log.Println("There was an error changing rev:")
+		log.Println(string(stderr.Bytes()))
+		return err
+	}
+
+	log.Println("Checked out")
+	return nil
 }
 
 func Deploy(context *cli.Context) {
 	config := LoadConfig(context)
-	revision := findRev(&config)
+	revision := checkNewDeployments(&config)
 
 	_ = revision
 	// checkout_path := config.AppPath + "/releases/" + revision

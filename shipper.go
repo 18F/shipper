@@ -12,12 +12,11 @@ import (
 )
 
 type Config struct {
-	GitUrl       string `yaml:"git_url"`
-	Environment  string
-	AppPath      string `yaml:"app_path"`
-	Revision     string
-	ServerId     string `yaml:"server_id"`
-	UseGithubAPI bool   `yaml:"use_github_api"`
+	GitUrl      string `yaml:"git_url"`
+	Environment string
+	AppPath     string `yaml:"app_path"`
+	Revision    string
+	ServerId    string `yaml:"server_id"`
 }
 
 func (c *Config) GetGithubClient() *github.Client {
