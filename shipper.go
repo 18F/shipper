@@ -83,9 +83,6 @@ func main() {
 	app := cli.NewApp()
 	app.Name = "Jack the shipper"
 	app.Usage = "Continuous deployment made easy and secure"
-	app.Action = func(c *cli.Context) {
-		println("boom! I say!")
-	}
 
 	globalFlags := []cli.Flag{
 		cli.StringFlag{
