@@ -20,6 +20,7 @@ type Config struct {
 	AfterSymlink  []string `yaml:"after_symlink"`
 	Interval      int
 	GithubClient  *github.Client
+	SharedFiles   map[string]string `yaml:"shared_files"`
 }
 
 func (c *Config) GetGithubClient() *github.Client {

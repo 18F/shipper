@@ -26,6 +26,7 @@ A configuration file is required to set up shipper. It uses the yaml format and 
 - `server_id`: A unique ID for the server
 - `before_symlink`: Array of commands to run before the symlink
 - `after_symlink`: Array of commands to run after the symlink
+- `shared_files`: A list of shared files to be symlinked
 
 A `GH_KEY` environment variable with a [Github Oauth Token](https://help.github.com/articles/creating-an-access-token-for-command-line-use/) is currently required to run shipper.
 This requirement will be removed for the monitor.

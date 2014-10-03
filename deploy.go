@@ -35,6 +35,9 @@ func checkNewDeployments(config *Config) (*string, error) {
 			return nil, nil
 		}
 
+		log.Println("Symlink Shared Files")
+		err = doSharedSymlink(config, checkoutPath)
+		PanicOn(err)
 		log.Println("Before Symlink")
 		err = doSymlinkStep(config, checkoutPath, true)
 		PanicOn(err)
@@ -91,6 +94,25 @@ func doCheckout(config *Config, deployment *github.Deployment) (*string, error) 
 
 	log.Println("Checked out")
 	return &checkoutPath, nil
+}
+
+func doSharedSymlink(config *Config, checkoutPath *string) error {
+	for shared, target := range config.SharedFiles {
+		log.Println("Linking", shared, "to", target)
+		sharedPath := config.AppPath + "/shared/" + shared
+		targetPath := *checkoutPath + "/" + target
+
+		// Remove existing file, if any
+		os.RemoveAll(targetPath)
+
+		// Do the Symlink
+		err := os.Symlink(sharedPath, targetPath)
+		if err != nil {
+			log.Println("Error symlinking")
+			log.Println(err)
+		}
+	}
+	return nil
 }
 
 func doSymlinkStep(config *Config, checkoutPath *string, before bool) error {
