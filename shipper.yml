@@ -2,7 +2,6 @@
 git_url: https://github.com/dlapiduz/govcode.org.git
 environment: demo 
 app_path: ./test
-revision: master
 server_id: myserver
 interval: 1
 before_symlink:

@@ -14,8 +14,7 @@ import (
 type Config struct {
 	GitUrl        string `yaml:"git_url"`
 	Environment   string
-	AppPath       string `yaml:"app_path"`
-	Revision      string
+	AppPath       string   `yaml:"app_path"`
 	ServerId      string   `yaml:"server_id"`
 	BeforeSymlink []string `yaml:"before_symlink"`
 	AfterSymlink  []string `yaml:"after_symlink"`

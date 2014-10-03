@@ -8,12 +8,11 @@ import (
 
 func NewDeploy(context *cli.Context) {
 	config := LoadConfig(context)
-	var ref, environment string
+	var environment string
 
-	if context.String("ref") != "" {
-		ref = context.String("ref")
-	} else {
-		ref = config.Revision
+	if context.String("ref") == "" {
+		log.Println("Ref is required, exiting")
+		return
 	}
 
 	if context.String("environment") != "" {
@@ -28,7 +27,7 @@ func NewDeploy(context *cli.Context) {
 	log.Println("Creating deploy")
 
 	status_req := github.DeploymentRequest{
-		Ref:         &ref,
+		Ref:         github.String(context.String("ref")),
 		Task:        github.String("deploy"),
 		AutoMerge:   github.Bool(false),
 		Environment: &environment,
