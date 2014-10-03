@@ -12,23 +12,30 @@ import (
 )
 
 type Config struct {
-	GitUrl      string `yaml:"git_url"`
-	Environment string
-	AppPath     string `yaml:"app_path"`
-	Revision    string
-	ServerId    string `yaml:"server_id"`
+	GitUrl        string `yaml:"git_url"`
+	Environment   string
+	AppPath       string `yaml:"app_path"`
+	Revision      string
+	ServerId      string   `yaml:"server_id"`
+	BeforeSymlink []string `yaml:"before_symlink"`
+	AfterSymlink  []string `yaml:"after_symlink"`
+	Interval      int
+	GithubClient  *github.Client
 }
 
 func (c *Config) GetGithubClient() *github.Client {
+	if c.GithubClient != nil {
+		return c.GithubClient
+	}
 	gh_key := os.Getenv("GH_KEY")
 
 	t := &oauth.Transport{
 		Token: &oauth.Token{AccessToken: gh_key},
 	}
 
-	client := github.NewClient(t.Client())
+	c.GithubClient = github.NewClient(t.Client())
 
-	return client
+	return c.GithubClient
 }
 
 func (c *Config) ParseGithubInfo() (string, string) {
@@ -91,16 +98,18 @@ func main() {
 			Usage: "base path for the app",
 		},
 	}
+	runFlags := []cli.Flag{
+		cli.StringFlag{
+			Name:  "ref",
+			Usage: "Deploy reference",
+		},
+		cli.StringFlag{
+			Name:  "environment, e",
+			Usage: "Deploy environment",
+		},
+	}
 
 	app.Commands = []cli.Command{
-		{
-			Name:  "deploy",
-			Usage: "Check for new deployments and execute them",
-			Action: func(context *cli.Context) {
-				Deploy(context)
-			},
-			Flags: globalFlags,
-		},
 		{
 			Name:  "setup",
 			Usage: "Create folder structure for deployments",
@@ -110,10 +119,18 @@ func main() {
 			Flags: globalFlags,
 		},
 		{
-			Name:  "test",
-			Usage: "Lets test some stuff",
+			Name:  "new",
+			Usage: "Create new deployment",
 			Action: func(context *cli.Context) {
-				Test(context)
+				NewDeploy(context)
+			},
+			Flags: append(globalFlags, runFlags...),
+		},
+		{
+			Name:  "run",
+			Usage: "Continuously check for deployments",
+			Action: func(context *cli.Context) {
+				Run(context)
 			},
 			Flags: globalFlags,
 		},

@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"github.com/dlapiduz/go-github/github"
-	"log"
 )
 
 type StatusDescription struct {
@@ -42,8 +41,6 @@ func findNewDeployment(config *Config) (*github.Deployment, error) {
 
 	// Do we have a deployment?
 	if len(deployments) > 0 {
-		log.Println("Deployment found!")
-
 		// Get latest deployment
 		deployment := &deployments[0]
 
@@ -53,6 +50,9 @@ func findNewDeployment(config *Config) (*github.Deployment, error) {
 			// there is some status for this deployment on this server so
 			// no need to do anything
 			// TODO: smarter handling of error or stuck pending deploys
+			if *status.State == "pending" {
+				return deployment, nil
+			}
 			return nil, nil
 		} else {
 			// there is no status, lets deploy
