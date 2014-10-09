@@ -131,6 +131,16 @@ func main() {
 			},
 			Flags: globalFlags,
 		},
+		{
+			Name:  "deploy",
+			Usage: "Manually check and run a deployment",
+			Action: func(context *cli.Context) {
+				config := LoadConfig(context)
+				Deploy(&config)
+
+			},
+			Flags: globalFlags,
+		},
 	}
 
 	app.Run(os.Args)
