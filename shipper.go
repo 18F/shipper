@@ -29,11 +29,14 @@ func (c *Config) GetGithubClient() *github.Client {
 	}
 	gh_key := os.Getenv("GH_KEY")
 
-	t := &oauth.Transport{
-		Token: &oauth.Token{AccessToken: gh_key},
+	if gh_key != "" {
+		t := &oauth.Transport{
+			Token: &oauth.Token{AccessToken: gh_key},
+		}
+		c.GithubClient = github.NewClient(t.Client())
+	} else {
+		c.GithubClient = github.NewClient(nil)
 	}
-
-	c.GithubClient = github.NewClient(t.Client())
 
 	return c.GithubClient
 }
