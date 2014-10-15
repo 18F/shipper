@@ -9,7 +9,7 @@ type StatusDescription struct {
 	Server string
 }
 
-func createDeployStatus(config *Config, deployment *github.Deployment, status string) error {
+func createDeployStatus(config *Config, deployment *github.Deployment, status string) {
 	client := config.GetGithubClient()
 	user, repo := config.ParseGithubInfo()
 
@@ -20,7 +20,7 @@ func createDeployStatus(config *Config, deployment *github.Deployment, status st
 		Description: github.String(string(desc)),
 	}
 	_, _, err := client.Repositories.CreateDeploymentStatus(user, repo, *deployment.ID, &req)
-	return err
+	PanicOn(err)
 }
 
 // findNewDeployment uses the github deployments api to look for a new deployment

@@ -18,39 +18,54 @@ func checkNewDeployments(config *Config) (*string, error) {
 
 		// Lets ping the api before deploying
 		log.Println("Setting to pending")
-		err := createDeployStatus(config, deployment, "pending")
-		PanicOn(err)
+		createDeployStatus(config, deployment, "pending")
 
 		// Actually deploy
 		checkoutPath, err := doCheckout(config, deployment)
 		if err != nil {
 			log.Println("There was an error checking out the code")
-			// statusErr := createDeployStatus(config, deployment, "error")
-			// PanicOn(statusErr)
-			// return checkoutPath, err
 		}
 
 		if checkoutPath == nil {
 			log.Println("No checkout path?!")
+			createDeployStatus(config, deployment, "error")
 			return nil, nil
 		}
 
+		// Symlink Shared Files
 		log.Println("Symlink Shared Files")
 		err = doSharedSymlink(config, checkoutPath)
-		PanicOn(err)
+		if err != nil {
+			createDeployStatus(config, deployment, "error")
+			return nil, err
+		}
+
+		// Run Before Symlink tasks
 		log.Println("Before Symlink")
 		err = doSymlinkStep(config, checkoutPath, true)
-		PanicOn(err)
+		if err != nil {
+			createDeployStatus(config, deployment, "error")
+			return nil, err
+		}
+
+		// Symlink /current to last release
 		log.Println("Symlink")
 		err = doSymlink(config, checkoutPath)
-		PanicOn(err)
+		if err != nil {
+			createDeployStatus(config, deployment, "error")
+			return nil, err
+		}
+
+		// Run After Symlink tasks
 		log.Println("After Symlink")
 		err = doSymlinkStep(config, checkoutPath, false)
-		PanicOn(err)
+		if err != nil {
+			createDeployStatus(config, deployment, "error")
+			return nil, err
+		}
 
 		// Lets mark the deploy as a success
-		err = createDeployStatus(config, deployment, "success")
-		PanicOn(err)
+		createDeployStatus(config, deployment, "success")
 		log.Println("Set to success")
 
 		return checkoutPath, nil
@@ -110,6 +125,7 @@ func doSharedSymlink(config *Config, checkoutPath *string) error {
 		if err != nil {
 			log.Println("Error symlinking")
 			log.Println(err)
+			return err
 		}
 	}
 	return nil
@@ -135,8 +151,9 @@ func doSymlinkStep(config *Config, checkoutPath *string, before bool) error {
 		err := cmd.Run()
 		if err != nil {
 			log.Println("Error Running: ", c)
-			log.Println(stderr.Bytes())
+			log.Println(string(stderr.Bytes()))
 			log.Println(err)
+			return err
 		} else {
 			log.Println("Successfully run: ", c)
 		}
