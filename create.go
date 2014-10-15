@@ -6,7 +6,7 @@ import (
 	"log"
 )
 
-func NewDeploy(context *cli.Context) {
+func Create(context *cli.Context) {
 	config := LoadConfig(context)
 	var environment string
 

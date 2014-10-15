@@ -119,7 +119,7 @@ func main() {
 			Name:  "new",
 			Usage: "Create new deployment",
 			Action: func(context *cli.Context) {
-				NewDeploy(context)
+				Create(context)
 			},
 			Flags: append(globalFlags, runFlags...),
 		},
