@@ -50,15 +50,3 @@ Crease a new deployment in the Github API. A `ref` is required.
 Run the process that continuously monitors for new deployments.
 
 `shipper run -c shipper.yml`
-
-
-### License
-
-The template itself is available under the "Simplified" BSD license and can be
-freely modified under the terms of that license. You can see the 
-[full license text](https://github.com/dlapiduz/fabistrano/blob/master/LICENSE>)
-in the Github repository for additional detail.
-
-Applications created using this template are not considered derivatives works.
-Applications created using this template can be freely licensed under whatever
-you as the author chooses. They may be either open or closed source.
