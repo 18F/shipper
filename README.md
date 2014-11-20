@@ -27,6 +27,8 @@ A configuration file is required to set up shipper. It uses the yaml format and 
 - `before_symlink`: Array of commands to run before the symlink
 - `after_symlink`: Array of commands to run after the symlink
 - `shared_files`: A list of shared files to be symlinked
+- `keep_revisions`: Revisions to keep when getting ones
+- `interval`: Interval between API checks in seconds
 
 A `GH_KEY` environment variable with a [Github Oauth Token](https://help.github.com/articles/creating-an-access-token-for-command-line-use/) is currently required to run shipper.
 This requirement will be removed for the monitor.
