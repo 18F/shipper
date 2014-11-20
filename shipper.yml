@@ -1,9 +1,10 @@
 ---
 git_url: https://github.com/dlapiduz/govcode.org.git
-environment: demo 
+environment: production
 app_path: ./test
-server_id: myserver2
+server_id: myserver5
 interval: 1
+keep_revisions: 3
 before_symlink:
 - touch foo.txt
 - touch bar.txt

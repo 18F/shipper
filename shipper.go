@@ -2,6 +2,7 @@ package main
 
 import (
 	"code.google.com/p/goauth2/oauth"
+	"errors"
 	"github.com/codegangsta/cli"
 	"github.com/dlapiduz/go-github/github"
 	"gopkg.in/yaml.v2"
@@ -21,6 +22,7 @@ type Config struct {
 	Interval      int
 	GithubClient  *github.Client
 	SharedFiles   map[string]string `yaml:"shared_files"`
+	KeepRevisions int               `yaml:"keep_revisions"`
 }
 
 func (c *Config) GetGithubClient() *github.Client {
@@ -54,20 +56,17 @@ func PanicOn(err error) {
 	}
 }
 
-func LoadConfig(context *cli.Context) Config {
+func LoadConfig(context *cli.Context) (Config, error) {
 	c := Config{}
 
 	if context.String("config") != "" {
 		c = ParseConfig(context.String("config"))
 		c.AppPath, _ = filepath.Abs(c.AppPath)
 	} else {
-		if context.String("app-path") != "" {
-			c.AppPath = context.String("app-path")
-		} else {
-			c.AppPath, _ = filepath.Abs(".")
-		}
+		return c, errors.New("No config provided")
 	}
-	return c
+
+	return c, nil
 
 }
 
@@ -139,7 +138,7 @@ func main() {
 			Name:  "deploy",
 			Usage: "Manually check and run a deployment",
 			Action: func(context *cli.Context) {
-				config := LoadConfig(context)
+				config, _ := LoadConfig(context)
 				Deploy(&config)
 
 			},

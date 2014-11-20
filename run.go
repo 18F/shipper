@@ -7,7 +7,7 @@ import (
 )
 
 func Run(context *cli.Context) {
-	config := LoadConfig(context)
+	config, _ := LoadConfig(context)
 	log.Println("Running shipper with an interval of ", config.Interval, " minutes")
 	c := time.Tick(time.Duration(config.Interval) * time.Minute)
 	for _ = range c {

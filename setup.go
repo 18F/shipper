@@ -8,7 +8,7 @@ import (
 func Setup(context *cli.Context) {
 	directories := [...]string{"releases", "shared"}
 
-	config := LoadConfig(context)
+	config, _ := LoadConfig(context)
 
 	for _, dir := range directories {
 		os.MkdirAll(config.AppPath+"/"+dir, os.FileMode(0755))

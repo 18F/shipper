@@ -7,7 +7,12 @@ import (
 )
 
 func Create(context *cli.Context) {
-	config := LoadConfig(context)
+	config, err := LoadConfig(context)
+	if err != nil {
+		log.Println("There was an error loading the config")
+		log.Println(err)
+		return
+	}
 	var environment string
 
 	if context.String("ref") == "" {
