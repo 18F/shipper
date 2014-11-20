@@ -1,9 +1,10 @@
 package main
 
 import (
-	"github.com/codegangsta/cli"
-	"github.com/dlapiduz/go-github/github"
 	"log"
+
+	"github.com/codegangsta/cli"
+	"github.com/google/go-github/github"
 )
 
 func Create(context *cli.Context) {

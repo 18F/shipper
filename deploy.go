@@ -9,7 +9,7 @@ import (
 	"os/exec"
 	"sort"
 
-	"github.com/dlapiduz/go-github/github"
+	"github.com/google/go-github/github"
 )
 
 type ByDate []os.FileInfo

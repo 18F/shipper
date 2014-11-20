@@ -4,7 +4,7 @@ import (
 	"code.google.com/p/goauth2/oauth"
 	"errors"
 	"github.com/codegangsta/cli"
-	"github.com/dlapiduz/go-github/github"
+	"github.com/google/go-github/github"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"os"
