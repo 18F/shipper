@@ -8,8 +8,8 @@ import (
 
 func Run(context *cli.Context) {
 	config, _ := LoadConfig(context)
-	log.Println("Running shipper with an interval of ", config.Interval, " minutes")
-	c := time.Tick(time.Duration(config.Interval) * time.Minute)
+	log.Println("Running shipper with an interval of ", config.Interval, " seconds")
+	c := time.Tick(time.Duration(config.Interval) * time.Second)
 	for _ = range c {
 		Deploy(&config)
 	}

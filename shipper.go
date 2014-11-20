@@ -1,15 +1,19 @@
 package main
 
 import (
-	"code.google.com/p/goauth2/oauth"
 	"errors"
-	"github.com/codegangsta/cli"
-	"github.com/google/go-github/github"
-	"gopkg.in/yaml.v2"
 	"io/ioutil"
+	"log"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"code.google.com/p/goauth2/oauth"
+	"github.com/codegangsta/cli"
+	"github.com/google/go-github/github"
+	"github.com/gregjones/httpcache"
+	"gopkg.in/yaml.v2"
 )
 
 type Config struct {
@@ -31,14 +35,16 @@ func (c *Config) GetGithubClient() *github.Client {
 	}
 	gh_key := os.Getenv("GH_KEY")
 
-	if gh_key != "" {
-		t := &oauth.Transport{
-			Token: &oauth.Token{AccessToken: gh_key},
-		}
-		c.GithubClient = github.NewClient(t.Client())
-	} else {
-		c.GithubClient = github.NewClient(nil)
+	authTransport := &oauth.Transport{
+		Token: &oauth.Token{AccessToken: gh_key},
 	}
+
+	memoryCacheTransport := httpcache.NewMemoryCacheTransport()
+	memoryCacheTransport.Transport = authTransport
+
+	httpClient := &http.Client{Transport: memoryCacheTransport}
+
+	c.GithubClient = github.NewClient(httpClient)
 
 	return c.GithubClient
 }
@@ -70,6 +76,14 @@ func LoadConfig(context *cli.Context) (Config, error) {
 
 }
 
+func checkConfig() error {
+	gh_key := os.Getenv("GH_KEY")
+	if gh_key == "" {
+		return errors.New("GH_KEY is a required env variable")
+	}
+	return nil
+}
+
 func ParseConfig(config_path string) Config {
 	c := Config{}
 
@@ -87,6 +101,11 @@ func main() {
 	app.Name = "Jack the shipper"
 	app.Usage = "Continuous deployment made easy and secure"
 	app.Version = "0.0.2"
+
+	if err := checkConfig(); err != nil {
+		log.Println(err)
+		return
+	}
 
 	globalFlags := []cli.Flag{
 		cli.StringFlag{
