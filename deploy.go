@@ -25,7 +25,7 @@ func Deploy(config *Config) error {
 	}
 
 	if deployment == nil {
-		log.Println("No new deployment")
+		// No new deployment
 		return nil
 	}
 
