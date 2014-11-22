@@ -11,8 +11,8 @@ import (
 
 	"code.google.com/p/goauth2/oauth"
 	"github.com/codegangsta/cli"
+	"github.com/dlapiduz/httpcache"
 	"github.com/google/go-github/github"
-	"github.com/gregjones/httpcache"
 	"gopkg.in/yaml.v2"
 )
 
@@ -100,7 +100,7 @@ func main() {
 	app := cli.NewApp()
 	app.Name = "Jack the shipper"
 	app.Usage = "Continuous deployment made easy and secure"
-	app.Version = "0.1.0"
+	app.Version = "0.1.2"
 
 	if err := checkConfig(); err != nil {
 		log.Println(err)
