@@ -8,8 +8,6 @@ import (
 	"os"
 	"os/exec"
 	"sort"
-
-	"github.com/google/go-github/github"
 )
 
 type ByDate []os.FileInfo
@@ -18,74 +16,47 @@ func (a ByDate) Len() int           { return len(a) }
 func (a ByDate) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a ByDate) Less(i, j int) bool { return a[j].ModTime().After(a[i].ModTime()) }
 
-func Deploy(config *Config) error {
-	deployment, err := findNewDeployment(config)
-	if err != nil {
-		return err
-	}
-
-	if deployment == nil {
-		// No new deployment
-		return nil
-	}
-
-	log.Println("No status found...")
-
-	// Lets ping the api before deploying
-	log.Println("Setting to pending")
-	createDeployStatus(config, deployment, "pending")
-
-	// Actually deploy
+func Deploy(config *Config, deployment *Deployment) error {
 	checkoutPath, err := doCheckout(config, deployment)
 	if err != nil {
 		log.Println("There was an error checking out the code")
-		createDeployStatus(config, deployment, "error")
 		return err
 	}
 
 	// Symlink Shared Files
 	log.Println("Symlink Shared Files")
 	if err = doSharedSymlink(config, checkoutPath); err != nil {
-		createDeployStatus(config, deployment, "error")
 		return err
 	}
 
 	// Run Before Symlink tasks
 	log.Println("Before Symlink")
 	if err = doSymlinkStep(config, checkoutPath, true); err != nil {
-		createDeployStatus(config, deployment, "error")
 		return err
 	}
 
 	// Symlink /current to last release
 	log.Println("Symlink")
 	if err = doSymlink(config, checkoutPath); err != nil {
-		createDeployStatus(config, deployment, "error")
 		return err
 	}
 
 	// Run After Symlink tasks
 	log.Println("After Symlink")
 	if err = doSymlinkStep(config, checkoutPath, false); err != nil {
-		createDeployStatus(config, deployment, "error")
 		return err
 	}
 
 	if err := doCleanup(config); err != nil {
-		createDeployStatus(config, deployment, "error")
 		return err
 	}
-
-	// Lets mark the deploy as a success
-	createDeployStatus(config, deployment, "success")
-	log.Println("Set to success")
 
 	return nil
 }
 
-func doCheckout(config *Config, deployment *github.Deployment) (*string, error) {
+func doCheckout(config *Config, deployment *Deployment) (*string, error) {
 	log.Println("Checking out code")
-	checkoutPath := config.AppPath + "/releases/" + *deployment.SHA
+	checkoutPath := config.AppPath + "/releases/" + deployment.SHA
 	if _, err := os.Stat(checkoutPath); err == nil {
 		return &checkoutPath, nil
 	}
@@ -106,7 +77,7 @@ func doCheckout(config *Config, deployment *github.Deployment) (*string, error) 
 	}
 
 	// get the revision we want
-	cmd = exec.Command("git", "reset", "--hard", *deployment.SHA)
+	cmd = exec.Command("git", "reset", "--hard", deployment.SHA)
 	cmd.Dir = checkoutPath
 	cmd.Stderr = &stderr
 

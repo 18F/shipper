@@ -1,14 +1,11 @@
 package main
 
 import (
-	"github.com/codegangsta/cli"
 	"os"
 )
 
-func Setup(context *cli.Context) {
+func Setup(config *Config) {
 	directories := [...]string{"releases", "shared"}
-
-	config, _ := LoadConfig(context)
 
 	for _, dir := range directories {
 		os.MkdirAll(config.AppPath+"/"+dir, os.FileMode(0755))
