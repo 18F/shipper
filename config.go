@@ -21,7 +21,8 @@ type Config struct {
 	SharedFiles   map[string]string `yaml:"shared_files"`
 	KeepRevisions int               `yaml:"keep_revisions"`
 
-	Backend Backend
+	BackendName string `yaml:"backend_name"`
+	Backend     Backend
 }
 
 type Backend interface {
@@ -37,7 +38,11 @@ type Deployment struct {
 
 // Checks if a config file is present and loads it
 func LoadConfig(context *cli.Context) (*Config, error) {
-	c := Config{}
+	// Set defaults for config
+	c := Config{
+		KeepRevisions: 3,
+		BackendName:   "github",
+	}
 
 	if context.String("config") == "" {
 		return nil, errors.New("No config path provided")
@@ -57,8 +62,11 @@ func LoadConfig(context *cli.Context) (*Config, error) {
 
 	// Make sure app path is absolute
 	c.AppPath, _ = filepath.Abs(c.AppPath)
-	backend := GithubBackend{Config: &c}
-	c.Backend = &backend
+
+	if c.BackendName == "github" {
+		backend := GithubBackend{Config: &c}
+		c.Backend = &backend
+	}
 
 	return &c, nil
 }
