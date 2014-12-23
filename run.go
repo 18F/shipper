@@ -32,8 +32,8 @@ func Run(config *Config) {
 				if err := config.Backend.UpdateStatus(dep, "error"); err != nil {
 					// Couldn't update status lets try next tick
 					log.Println(err)
-					continue
 				}
+				continue
 			}
 
 			// Successful deploy
