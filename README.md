@@ -1,6 +1,6 @@
 ## Jack the Shipper
 
-Shipper is a continuous deployment tool that leverages GitHub's [Deployments API](https://developer.github.com/v3/repos/deployments/) to allow secure asyncronous deployments.
+Shipper is a continuous deployment tool that leverages GitHub's [Deployments API](https://developer.github.com/v3/repos/deployments/) to allow secure asynchronous deployments.
 
 ### How does it work?
 
@@ -18,7 +18,7 @@ Here is a diagram of how the whole system might look like:
 
 ### Configuration
 
-A configuration file is required to set up shipper. It uses the yaml format and it should contain the following parameters:
+A configuration file is required to set up shipper. It uses the [YAML](http://www.yaml.org/) format and it should contain the following parameters:
 
 - `git_url`: The url of the Github repository
 - `environment`: The environment the daemon should check for new deployments
